@@ -52,6 +52,7 @@ CFLAGS=-I. -I$(PATHU) -I$(PATHI) -I$(PATHS) -I$(ZEPHYR_BASE)/include -DTEST
 
 test: $(PATHB) $(TGT)
     ./$(TGT)
+#remove this ./$(TGT) if it does not build the first time
 
 $(PATHB)%.o:: $(PATHS)%.c $(DEP)
     $(CC) -c $(CFLAGS) $< -o $@
