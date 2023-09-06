@@ -41,10 +41,14 @@ TGT = $(PATHB)test$(TARGET_EXTENSION)
 
 # Tool Definitions
 CC=gcc
+#CC = $(ZEPHYR_BASE)/zephyr/toolchain/gcc/bin/arm-zephyr-eabi-gcc  # Update this with the path to your Zephyr GCC toolchain
 CFLAGS=-I. -I$(PATHU) -I$(PATHI) -I$(PATHS) -I$(ZEPHYR_BASE)/include -DTEST
 
 # Add any necessary Zephyr libraries here if needed
 # LDFLAGS=-L$(ZEPHYR_BASE)/lib -lzephyr
+
+# Define the target board (replace with your specific board)
+#BOARD = <YOUR_BOARD_NAME>
 
 test: $(PATHB) $(TGT)
     ./$(TGT)
