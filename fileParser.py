@@ -28,9 +28,8 @@ def collect_unique_includes(directory):
     # print(unique_includes)
     return set(unique_includes)
 
-
 def copy_headers(unique_includes, source_directory, destination_directory):
-    print(unique_includes)
+    # print(unique_includes)
     copied_headers = set()
     os.makedirs(destination_directory, exist_ok=True) # look into this here
     for header in unique_includes:
@@ -40,10 +39,85 @@ def copy_headers(unique_includes, source_directory, destination_directory):
                     if file == header:
                         header_path = os.path.join(root, file)
                         print(header_path)
+                        extract_global_static_variables(header_path)
                         if os.path.exists(header_path) and os.path.isfile(header_path):
                             shutil.copy(header_path, destination_directory )
                             copied_headers.add(header)
         
+
+def extract_global_static_variables(input_file_path):
+    # Regular expression patterns for global and static variable declarations
+    global_pattern = r'(\w+)\s+(\w+)\s*;'
+    static_pattern = r'static\s+(\w+)\s+(\w+)\s*;'
+
+    global_vars = []
+    static_vars = []
+
+    with open(input_file_path, 'r') as input_file:
+        inside_function = False
+        for line in input_file:
+            # Check if we're inside a function
+            if re.search(r'\w+\s+\w+\s*\([^)]*\)\s*{', line):
+                inside_function = True
+            elif re.search(r'}', line):
+                inside_function = False
+
+            # Search for global variable declarations
+            if not inside_function:
+                global_match = re.search(global_pattern, line)
+                static_match = re.search(static_pattern, line)
+                if global_match:
+                    global_vars.append(global_match.group())
+                elif static_match:
+                    static_vars.append(static_match.group())
+
+    print("globals:", global_vars)
+    print("static:", static_vars)
+    # return global_vars, static_vars
+
+
+
+def generate_header_from_source(input_file_path, output_file_path):
+    global_vars, static_vars = extract_global_static_variables(input_file_path)
+
+    # Regular expression pattern to match C function definitions
+    function_pattern = r'(.*?)\s+(\w+)\s*\([^)]*\)\s*{'
+
+    try:
+        # Open the output header file
+        with open(output_file_path, 'w') as output_file:
+            # Write global variables to the header
+            for global_var in global_vars:
+                output_file.write(f'{global_var}\n')
+
+            # Write static variables to the header
+            for static_var in static_vars:
+                output_file.write(f'{static_var}\n')
+
+            # Write function prototypes to the header
+            with open(input_file_path, 'r') as input_file:
+                inside_function = False
+                for line in input_file:
+                    # Check if we're inside a function
+                    if re.search(r'\w+\s+\w+\s*\([^)]*\)\s*{', line):
+                        inside_function = True
+                    elif re.search(r'}', line):
+                        inside_function = False
+
+                    # Search for function definitions using the pattern
+                    if not inside_function:
+                        function_match = re.search(function_pattern, line)
+                        if function_match:
+                            return_type, function_name = function_match.groups()
+                            # Write the function prototype to the output header file
+                            output_file.write(f'{return_type} {function_name}();\n')
+
+        print(f"Header file '{output_file_path}' generated with function prototypes, global, and static variables.")
+
+    except FileNotFoundError:
+        print(f"Error: File not found - {input_file_path}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
 if __name__ == "__main__":
     source_directory = "unit3a/src"
@@ -51,5 +125,8 @@ if __name__ == "__main__":
     starting_location = "unit3a"
 
     unique_includes = collect_unique_includes(source_directory)
+    # test = list(unique_includes)
+    # unique_includes = get_includes(source_directory)
     # print(unique_includes, type(unique_includes))
+    # extract_global_static_variables(test[0])
     copy_headers(unique_includes, starting_location, destination_directory)
