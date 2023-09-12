@@ -119,6 +119,67 @@ def generate_header_from_source(input_file_path, output_file_path):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
+
+
+'''
+def extract_function_signatures(input_file_path):
+    # Regular expression pattern to match C function signatures
+    function_pattern = r'(.*?)\s+(\w+)\s*\(([^)]*)\)\s*{'
+
+    function_signatures = []
+
+    with open(input_file_path, 'r') as input_file:
+        inside_function = False
+        for line in input_file:
+            # Check if we're inside a function
+            if re.search(r'\w+\s+\w+\s*\([^)]*\)\s*{', line):
+                inside_function = True
+            elif re.search(r'}', line):
+                inside_function = False
+
+            # Search for function signatures using the pattern
+            if not inside_function:
+                function_match = re.search(function_pattern, line)
+                if function_match:
+                    return_type, function_name, parameters = function_match.groups()
+                    # Remove whitespace and newline characters from parameters
+                    parameters = ' '.join(parameters.split())
+                    # Write the function prototype to the list
+                    function_signatures.append(f'{return_type} {function_name}({parameters});')
+
+    return function_signatures
+
+def generate_header_from_source(input_file_path, output_file_path):
+    static_vars = extract_static_variables(input_file_path)
+    function_signatures = extract_function_signatures(input_file_path)
+
+    try:
+        # Open the output header file
+        with open(output_file_path, 'w') as output_file:
+            # Write the #define TEST with STATIC inside and #define STATIC
+            output_file.write("#define TEST\n")
+            output_file.write("#ifdef TEST\n")
+            output_file.write("#define STATIC static\n")
+            output_file.write("#else\n")
+            output_file.write("#define STATIC\n")
+            output_file.write("#endif\n\n")
+
+            # Write static variables to the header
+            for static_var in static_vars:
+                output_file.write(f'{static_var}\n')
+
+            # Write the function prototypes to the header
+            for signature in function_signatures:
+                output_file.write(f'{signature}\n')
+
+        print(f"Header file '{output_file_path}' generated with static variables and function prototypes.")
+
+    except FileNotFoundError:
+        print(f"Error: File not found - {input_file_path}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+'''
+
 if __name__ == "__main__":
     source_directory = "unit3a/src"
     destination_directory = "testing/test"
